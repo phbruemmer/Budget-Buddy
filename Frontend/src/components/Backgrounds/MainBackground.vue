@@ -1,119 +1,85 @@
 <template>
-  <div class="bubble-container">
-    <div
-      class="bubble"
-      v-for="bubble in bubbles"
-      :style="{
-        top: bubble.vertical + '%',
-        left: bubble.horizontal + '%',
-        height: bubble.size + 'rem',
-        width: bubble.size + 'rem',
-      }"
-      @click="decrease_size(bubble)"
-      v-show="bubble.visible"
-    >
-      <p>{{ bubble.lives }}</p>
-    </div>
+  <div
+    class="header"
+    :style="{
+      transform: `translateY(${offsetY * 0.4}px)`,
+    }"
+  >
+    <h1 class="title">Budget-Buddy</h1>
+    <h1 class="sub-title">Track It. Save It. Own It.</h1>
+  </div>
+  <svg
+    xmlns="http://www.w3.org/2000/svg"
+    viewBox="0 0 1440 320"
+    preserveAspectRatio="none"
+    class="wave"
+  >
+    <path
+      fill="#006051"
+      d="M0,288L9.6,256C19.2,224,38,160,58,138.7C76.8,117,96,139,115,160C134.4,181,154,203,173,181.3C192,160,211,96,230,96C249.6,96,269,160,288,186.7C307.2,213,326,203,346,192C364.8,181,384,171,403,181.3C422.4,192,442,224,461,245.3C480,267,499,277,518,250.7C537.6,224,557,160,576,154.7C595.2,149,614,203,634,240C652.8,277,672,299,691,266.7C710.4,235,730,149,749,128C768,107,787,149,806,144C825.6,139,845,85,864,85.3C883.2,85,902,139,922,170.7C940.8,203,960,213,979,186.7C998.4,160,1018,96,1037,74.7C1056,53,1075,75,1094,96C1113.6,117,1133,139,1152,128C1171.2,117,1190,75,1210,58.7C1228.8,43,1248,53,1267,101.3C1286.4,149,1306,235,1325,256C1344,277,1363,235,1382,229.3C1401.6,224,1421,256,1430,272L1440,288L1440,320L1430.4,320C1420.8,320,1402,320,1382,320C1363.2,320,1344,320,1325,320C1305.6,320,1286,320,1267,320C1248,320,1229,320,1210,320C1190.4,320,1171,320,1152,320C1132.8,320,1114,320,1094,320C1075.2,320,1056,320,1037,320C1017.6,320,998,320,979,320C960,320,941,320,922,320C902.4,320,883,320,864,320C844.8,320,826,320,806,320C787.2,320,768,320,749,320C729.6,320,710,320,691,320C672,320,653,320,634,320C614.4,320,595,320,576,320C556.8,320,538,320,518,320C499.2,320,480,320,461,320C441.6,320,422,320,403,320C384,320,365,320,346,320C326.4,320,307,320,288,320C268.8,320,250,320,230,320C211.2,320,192,320,173,320C153.6,320,134,320,115,320C96,320,77,320,58,320C38.4,320,19,320,10,320L0,320Z"
+    ></path>
+  </svg>
+  <div class="bg-container">
+    <slot></slot>
   </div>
 </template>
 
 <script lang="ts" setup>
-import { onMounted, ref } from "vue";
-import pop_sound from "../../assets/sounds/drop_sound.mp3";
-import pop_sound_small from "../../assets/sounds/drop_sound_small.mp3";
+import { onMounted, onUnmounted, ref } from "vue";
 
-import { std_api_request } from "../../utils/api";
+const offsetY = ref(0);
 
-const popSound = new Audio(pop_sound);
-const popSoundSmall = new Audio(pop_sound_small);
-
-interface Bubble {
-  visible: boolean;
-  size: number;
-  vertical: number;
-  horizontal: number;
-  lives: number;
-}
-
-const initial_bubbleCount = 10;
-const bubbleCount = ref<number>(initial_bubbleCount);
-
-const bubbles = ref<Bubble[]>([]);
-
-const decrease_size = (bubble: Bubble) => {
-  if (bubble.lives !== 1) {
-    const new_size = bubble.size / 2;
-
-    bubble.horizontal += (bubble.size - new_size) / 2;
-    bubble.vertical += (bubble.size - new_size) / 2;
-    bubble.size = new_size;
-    bubble.lives -= 1;
-    popSoundSmall.currentTime = 0;
-    popSoundSmall.play();
-
-    std_api_request("/main/test/", "POST", { test: "Hello world!" });
-  } else {
-    bubble.visible = false;
-    popSound.currentTime = 0;
-    popSound.play();
-    bubbleCount.value -= 1;
-  }
-
-  if (bubbleCount.value === 0) start();
-};
-
-const start = () => {
-  bubbleCount.value = initial_bubbleCount;
-  const container = document.querySelector(".bubble-container");
-  if (!container) return;
-
-  for (let i = 0; i < initial_bubbleCount; i++) {
-    const size = 5 + Math.random() * 15;
-
-    const horizontal = Math.random() * 90;
-    const vertical = Math.random() * 90;
-
-    bubbles.value.push({
-      visible: true,
-      size: size,
-      vertical: vertical,
-      horizontal: horizontal,
-      lives: 3,
-    });
-  }
+const handleScroll = () => {
+  offsetY.value = window.scrollY;
 };
 
 onMounted(() => {
-  start();
+  window.addEventListener("scroll", handleScroll);
+});
+
+onUnmounted(() => {
+  window.removeEventListener("scroll", handleScroll);
 });
 </script>
 
-<style>
-p {
-  color: #fff;
-  align-self: center;
-}
-
-.bubble-container {
+<style scoped>
+.header {
+  position: relative;
+  min-height: 40vh;
+  max-height: 80vh;
   display: flex;
   justify-content: center;
+  flex-direction: column;
+  background: transparent;
   align-items: center;
-  position: fixed;
-  top: 0;
-  right: 0;
-  width: 90%;
-  height: 90%;
   z-index: 0;
 }
 
-.bubble {
-  position: absolute;
-  border-radius: 50%;
-  background: #6c58cec6;
-  transition: all 0.1s ease;
+.title {
+  color: #0060518d;
+  font-size: 12vh;
 }
 
-.bubble:hover {
-  cursor: pointer;
+.sub-title {
+  font-weight: 400;
+}
+.header span {
+  color: #2b9a88;
+}
+
+.wave {
+  position: relative;
+  display: block;
+  width: 100%;
+  height: 150px;
+  z-index: 1;
+}
+
+.bg-container {
+  position: relative;
+  height: 100vh;
+  width: 100%;
+  background: #006051;
+  z-index: 1;
 }
 </style>

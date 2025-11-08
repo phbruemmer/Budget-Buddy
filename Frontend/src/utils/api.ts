@@ -12,7 +12,6 @@ interface API_RESPONSE {
 }
 
 const ALLOWED_BODY_METHODS = ["POST", "PUT", "PATCH"];
-const FORBIDDEN_BODY_METHODS = ["GET", "HEAD"];
 
 export async function std_api_request(
   url: string,
@@ -28,7 +27,9 @@ export async function std_api_request(
     "Content-Type": "application/json",
   };
 
-  if (authorization && token) {
+  if (authorization) {
+    if (!token)
+      throw new Error("Authorization required but acceses token is missing.");
     headers.Authorization = `Bearer ${token}`;
   }
 
@@ -43,8 +44,6 @@ export async function std_api_request(
 
   try {
     const response = await fetch(API_ENDPOINT, request);
-
-    if (response.url !== API_ENDPOINT) return;
 
     const api_response: API_RESPONSE = {
       data: await response.json(),
