@@ -37,6 +37,8 @@ function selectTab(tab: string) {
 .section {
   display: flex;
   justify-content: center;
+  margin: 4vh 0;
+  height: 55vh;
 }
 
 .box-container {

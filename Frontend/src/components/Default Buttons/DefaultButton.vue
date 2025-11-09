@@ -1,8 +1,18 @@
 <template>
-  <button class="default-button" @click="$emit('button')"><slot></slot></button>
+  <button
+    class="default-button"
+    :class="props.dotted ? 'dotted-border' : ''"
+    @click="$emit('button')"
+  >
+    <slot></slot>
+  </button>
 </template>
 
-<script lang="ts" setup></script>
+<script lang="ts" setup>
+const props = defineProps<{
+  dotted?: boolean;
+}>();
+</script>
 
 <style scoped>
 .default-button {
@@ -11,7 +21,7 @@
   font-size: 14px;
   font-weight: 400;
   padding: 12px 24px;
-  border: none;
+  border: solid #006051 2px;
   border-radius: 8px;
   cursor: pointer;
   transition: background-color 0.3s, transform 0.2s, box-shadow 0.2s;
@@ -27,5 +37,15 @@
 .default-button:active {
   transform: translateY(1px);
   box-shadow: 0 3px 5px rgba(0, 0, 0, 0.1);
+}
+
+.dotted-border {
+  background: transparent;
+  color: #000;
+  border: dotted #000 2px;
+}
+
+.dotted-border:hover {
+  background: #0000001a;
 }
 </style>
