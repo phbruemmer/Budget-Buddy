@@ -1,18 +1,19 @@
 <template>
   <div class="input-container">
-    <input type="text" v-model="text" required placeholder=" " />
+    <input :type="props.type" required v-model="input_data" placeholder=" " />
     <label>{{ props.placerholder }}</label>
   </div>
 </template>
 
 <script lang="ts" setup>
-import { ref } from "vue";
+type TypeOptions = "text" | "password" | "email";
 
 const props = defineProps<{
   placerholder?: string;
+  type?: TypeOptions;
 }>();
 
-const text = ref("");
+const input_data = defineModel<string>();
 </script>
 
 <style scoped>

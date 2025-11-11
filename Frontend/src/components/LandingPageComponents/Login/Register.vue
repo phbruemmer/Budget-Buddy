@@ -2,12 +2,20 @@
   <h1>Register</h1>
 
   <div v-if="registerSteps === 0">
-    <InputBar placerholder="Username" />
-    <InputBar placerholder="E-Mail" />
-    <InputBar placerholder="Password" />
+    <InputBar placerholder="Username" type="text" v-model="userData.username" />
+    <InputBar placerholder="E-Mail" type="email" v-model="userData.email" />
+    <InputBar
+      placerholder="Password"
+      type="password"
+      v-model="userData.password_1"
+    />
   </div>
   <div v-else-if="registerSteps === 1">
-    <InputBar placerholder="Password Check" />
+    <InputBar
+      placerholder="Password Check"
+      type="password"
+      v-model="userData.password_2"
+    />
   </div>
   <div v-else-if="registerSteps === 2">
     <InputBar placerholder="Verification Code" />
@@ -29,22 +37,145 @@
       >{{ registerSteps !== 2 ? "Continue" : "Register" }}</DefaultButton
     >
   </div>
+
+  <HeadMsgBox
+    :show="show_msg_box"
+    title="Information"
+    @close="show_msg_box = false"
+  >
+    {{ msg_box_text }}
+  </HeadMsgBox>
 </template>
 
 <script lang="ts" setup>
 import InputBar from "../../Default Inputs/InputBar.vue";
 import DefaultButton from "../../Default Buttons/DefaultButton.vue";
+
+// Modals
+import HeadMsgBox from "../../Modals/HeadMsgBox.vue";
+
+import { std_api_request } from "../../../utils/api";
 import { ref } from "vue";
+
+interface UserData {
+  username: string | undefined;
+  email: string | undefined;
+  password_1: string | undefined;
+  password_2: string | undefined;
+}
+
+const msg_box_text = ref<string>("");
+const show_msg_box = ref<boolean>(false);
+
+const userData = ref<UserData>({
+  username: "",
+  email: "",
+  password_1: "",
+  password_2: "",
+});
 
 const registerSteps = ref<number>(0);
 
+const handleMsgBox = (content: string) => {
+  msg_box_text.value = content;
+  show_msg_box.value = true;
+};
+
 const handleReturn = () => {
+  userData.value = { username: "", email: "", password_1: "", password_2: "" };
   registerSteps.value = 0;
 };
 
-const handleClick = () => {
+const handleVerification = () => {
+  handleMsgBox(
+    `We have sent the verification code to the email address '${userData.value.email}'.`
+  );
+};
+
+const handleRegister = async () => {
+  if (!userData.value?.password_1 || !userData.value.password_2) {
+    handleMsgBox("You need to enter your password twice.");
+    return;
+  }
+  if (userData.value?.password_1 !== userData.value?.password_2) {
+    handleMsgBox("Your passwords must match to continue.");
+    return;
+  }
   registerSteps.value += 1;
 
+  const response = await std_api_request("/api/auth/register/", "POST", {
+    username: userData.value.username,
+    email: userData.value.email,
+    password: userData.value.password_1,
+    password_2: userData.value.password_2,
+  });
+
+  console.log(response.data);
+};
+
+const check_password_regex = (password: string): boolean => {
+  if (!/[A-Z]/.test(password)) {
+    handleMsgBox("Password must contain at least one uppercase letter.");
+    return false;
+  }
+
+  if (!/\d/.test(password)) {
+    handleMsgBox("Password must contain at least one number.");
+    return false;
+  }
+
+  if (!/[!@#$%^&*(),.?":{}|<>]/.test(password)) {
+    handleMsgBox("Password must contain at least one special character.");
+    return false;
+  }
+  return true;
+};
+
+const check_email_regex = (email: string) => {
+  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+    handleMsgBox(
+      "Please enter a valid email address (e.g., name@example.com)."
+    );
+    return false;
+  }
+  return true;
+};
+
+const check_username_regex = (username: string): boolean => {
+  if (!/^[A-Za-z0-9_]+$/.test(username)) {
+    handleMsgBox(
+      "Username can only contain letters, numbers, and underscores."
+    );
+    return false;
+  }
+  return true;
+};
+
+const handleFormValidation = () => {
+  if (!userData.value?.username) {
+    handleMsgBox("You need a username.");
+    return;
+  }
+  if (!userData.value?.email) {
+    handleMsgBox("You need a to enter an email address.");
+    return;
+  }
+  if (!userData.value?.password_1) {
+    handleMsgBox("You need a valid password.");
+    return;
+  }
+
+  if (!check_username_regex) return;
+  if (!check_email_regex) return;
+  if (!check_password_regex) return;
+
+  registerSteps.value += 1;
+};
+
+const handleClick = () => {
+  if (registerSteps.value === 0) handleFormValidation();
+  else if (registerSteps.value === 1) handleRegister();
+  else if (registerSteps.value === 2) handleVerification();
   if (registerSteps.value < 0 || registerSteps.value > 2)
     registerSteps.value = 0;
 };

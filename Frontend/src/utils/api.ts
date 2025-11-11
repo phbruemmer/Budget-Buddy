@@ -50,7 +50,7 @@ export async function std_api_request(
       status: response.status,
       ok: response.ok,
     };
-    console.log(api_response);
+    return api_response;
   } catch (err: any) {
     console.log(err);
   }
