@@ -55,33 +55,35 @@ class RegisterSerializer(serializers.ModelSerializer):
             is_active=False,
         )
 
-        code = user.generate_verification_code()
-        send_mail(
-            "Verification Code",
-            f"Your verification code us: {code}",
-            "noreply@budget-buddy.com",
-            [user.email],
-            fail_silently=False,
-        )
+        user.generate_verification_code()
+
         return user
 
 
 class VerifyUserSerializer(serializers.Serializer):
+    verification_code = serializers.CharField(max_length=6)
+    username = serializers.CharField(max_length=50)
     email = serializers.EmailField()
-    code = serializers.CharField(max_length=6)
 
     def validate(self, data):
-        try:
-            user = User.objects.get(email=data["email"])
-        except User.DoesNotExist:
-            raise serializers.ValidationError("Invalid email")
+        username = data.get('username')
+        email = data.get('email')
 
-        if user.verification_code != data['code']:
+        if not username or not email:
+            raise serializers.ValidationError("No user data was found.")
+
+        try:
+            user = User.objects.get(username=username, email=email)
+        except User.DoesNotExist:
+            raise serializers.ValidationError("No valid user data was found.")
+
+        input_code = data.get('verification_code')
+        if user.verification_code != input_code:
             raise serializers.ValidationError("Invalid verification code.")
 
         user.is_active = True
         user.is_verified = True
         user.verification_code = None
         user.save()
-
+        print("User verified!")
         return user

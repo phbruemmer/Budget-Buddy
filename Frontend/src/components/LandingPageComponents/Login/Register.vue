@@ -18,7 +18,7 @@
     />
   </div>
   <div v-else-if="registerSteps === 2">
-    <InputBar placerholder="Verification Code" />
+    <InputBar placerholder="Verification Code" v-model="verification_code" />
   </div>
   <div v-else>
     <h3>Hey! Don't change my code! Chaos theory says don't.</h3>
@@ -74,6 +74,8 @@ const userData = ref<UserData>({
   password_2: "",
 });
 
+const verification_code = ref<string>("");
+
 const registerSteps = ref<number>(0);
 
 const handleMsgBox = (content: string) => {
@@ -86,10 +88,13 @@ const handleReturn = () => {
   registerSteps.value = 0;
 };
 
-const handleVerification = () => {
-  handleMsgBox(
-    `We have sent the verification code to the email address '${userData.value.email}'.`
-  );
+const handleVerification = async () => {
+  const response = await std_api_request("/api/auth/verify/", "POST", {
+    username: userData.value.username,
+    email: userData.value.email,
+    verification_code: verification_code.value,
+  });
+  console.log(response.data);
 };
 
 const handleRegister = async () => {

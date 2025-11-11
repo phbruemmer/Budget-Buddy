@@ -16,4 +16,5 @@ class User(AbstractUser):
         code = str(uuid.uuid4().int)[:6]
         self.verification_code = code
         self.save()
+        print(self.verification_code)
         return code

@@ -6,6 +6,7 @@ from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework.decorators import api_view, permission_classes
 
 from .serializers import RegisterSerializer
+from .serializers import VerifyUserSerializer
 # from .serializers import LoginSerializer
 
 
@@ -26,6 +27,17 @@ class RegisterView(APIView):
 
 
 class VerifyUserView(APIView):
+    permission_classes = [AllowAny]
 
     def post(self, request):
-        return Response({"message": "Account verified succeessfully!"}, status=status.HTTP_200_OK)
+        serializer = VerifyUserSerializer(data=request.data)
+        if serializer.is_valid():
+            return Response({"message": "Account verified succeessfully!"}, status=status.HTTP_200_OK)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+class LoginUserView(APIView):
+    permission_classes = [AllowAny]
+
+    def post(self, request):
+        return Response({"message": "Login not available"}, status=status.HTTP_200_OK)
