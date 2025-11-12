@@ -1,7 +1,13 @@
 <template>
   <button
     class="default-button"
-    :class="props.dotted ? 'dotted-border' : ''"
+    :class="{
+      'dotted-border': props.dotted,
+    }"
+    :style="{
+      'border-color': color ? color : !props.dotted ? 'transparent' : '#000',
+      color: color ? color : props.dotted ? '#000' : '#fff',
+    }"
     @click="$emit('button')"
   >
     <slot></slot>
@@ -11,6 +17,7 @@
 <script lang="ts" setup>
 const props = defineProps<{
   dotted?: boolean;
+  color?: string;
 }>();
 </script>
 
