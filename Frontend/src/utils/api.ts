@@ -16,7 +16,7 @@ const ALLOWED_BODY_METHODS = ["POST", "PUT", "PATCH"];
 async function refreshAccessToken(): Promise<string | null> {
   try {
     const response: API_REQUEST = await fetch(
-      `${API_URL}/auth/token/refresh/`,
+      `${API_URL}/api/auth/token/refresh/`,
       {
         method: "POST",
         credentials: "include",

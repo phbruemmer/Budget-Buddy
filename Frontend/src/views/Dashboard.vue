@@ -15,7 +15,9 @@
           <DefaultButton :dotted="true" @button="createNewProject">
             Add Project
           </DefaultButton>
-          <DefaultButton :dotted="true">Import Project</DefaultButton>
+          <DefaultButton :dotted="true" @button="importProject">
+            Import Project
+          </DefaultButton>
         </div>
 
         <div class="project-container">
@@ -85,6 +87,21 @@
     </SideMenu>
 
     <LandingpageFooter />
+    <Loadingscreen :load="loadPage" @close="finishLoad" />
+    <GeneralModal
+      title="Import project"
+      :show="openImportModal"
+      @close="openImportModal = false"
+    >
+      <template #description>
+        You can import project files with the .bbp extension or valid projects
+        exported to Excel in the Excel format.
+      </template>
+
+      <template #general>
+        <FileUpload accept=".bbp, .xls, .xlsx" />
+      </template>
+    </GeneralModal>
   </div>
 </template>
 
@@ -94,14 +111,19 @@ import { onMounted, ref } from "vue";
 
 import Hamburger from "../components/Default Buttons/Hamburger.vue";
 import DefaultButton from "../components/Default Buttons/DefaultButton.vue";
+import FileUpload from "../components/Default Inputs/FileUpload.vue";
 import SideMenu from "../components/Modals/SideMenu.vue";
+import GeneralModal from "../components/Modals/GeneralModal.vue";
 
 import LandingpageFooter from "../components/Footers/LandingpageFooter.vue";
+import Loadingscreen from "../components/Loading/Loadingscreen.vue";
 
 type SelectedProjectTabs = "recent" | "favorites" | "shared";
 
+const loadPage = ref<boolean>(false);
 const show_page = ref<boolean>(false);
 const openMenu = ref<boolean>(false);
+const openImportModal = ref<boolean>(false);
 
 const selectedProjectTab = ref<SelectedProjectTabs>("recent");
 
@@ -109,9 +131,21 @@ const selectTab = (tab: SelectedProjectTabs) => {
   selectedProjectTab.value = tab;
 };
 
+// Create new project //
+const finishLoad = () => {
+  loadPage.value = false;
+  window.location.href = "/project-editor/";
+};
+
 const createNewProject = () => {
   // Loading Screen
   // Switch page to editor
+  loadPage.value = true;
+};
+
+// Import project //
+const importProject = () => {
+  openImportModal.value = true;
 };
 
 onMounted(async () => {
