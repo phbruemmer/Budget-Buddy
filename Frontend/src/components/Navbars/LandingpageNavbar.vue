@@ -48,6 +48,7 @@
   text-decoration: none;
   color: #333;
   font-weight: 500;
+  font-family: "Supreme-Regular";
   padding: 8px 12px;
   border-radius: 8px;
   display: inline-block;

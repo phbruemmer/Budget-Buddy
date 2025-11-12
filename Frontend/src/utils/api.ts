@@ -15,10 +15,13 @@ const ALLOWED_BODY_METHODS = ["POST", "PUT", "PATCH"];
 
 async function refreshAccessToken(): Promise<string | null> {
   try {
-    const response: API_REQUEST = await fetch(`${API_URL}/auth/refresh/`, {
-      method: "POST",
-      credentials: "include",
-    });
+    const response: API_REQUEST = await fetch(
+      `${API_URL}/auth/token/refresh/`,
+      {
+        method: "POST",
+        credentials: "include",
+      }
+    );
 
     if (!response.ok) return null;
 
@@ -29,7 +32,7 @@ async function refreshAccessToken(): Promise<string | null> {
       localStorage.setItem("access_token", newToken);
       return newToken;
     } else {
-      console.warn("Access Forbidden: Seession expired or unauthorized");
+      console.warn("Access Forbidden: Session expired or unauthorized");
     }
   } catch (err: any) {
     console.error("Failed to refresh token: ", err);

@@ -44,6 +44,7 @@
 
 <script lang="ts" setup>
 import { onMounted, onUnmounted, ref } from "vue";
+import "../../assets/css/chillax.css";
 
 const offsetY = ref(0);
 
@@ -76,10 +77,12 @@ onUnmounted(() => {
 .title {
   color: #0060518d;
   font-size: 12vh;
+  font-family: "Chillax-Semibold";
 }
 
 .sub-title {
   font-weight: 400;
+  font-family: "Chillax-Medium";
 }
 .header span {
   color: #2b9a88;
@@ -97,7 +100,7 @@ onUnmounted(() => {
   position: relative;
   min-height: 50vh;
   width: 100%;
-  background: #006051; /* 006051 */
+  background: #006051;
   z-index: 0;
   padding-top: 5vh;
 }

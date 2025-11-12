@@ -57,6 +57,10 @@ import HeadMsgBox from "../../Modals/HeadMsgBox.vue";
 import { std_api_request } from "../../../utils/api";
 import { ref } from "vue";
 
+const emits = defineEmits<{
+  (e: "go_login"): void;
+}>();
+
 interface UserData {
   username: string | undefined;
   email: string | undefined;
@@ -94,7 +98,10 @@ const handleVerification = async () => {
     email: userData.value.email,
     verification_code: verification_code.value,
   });
-  console.log(response.data);
+  verification_code.value = "";
+
+  if (response.ok) emits("go_login");
+  else handleMsgBox("Invalid verification code.");
 };
 
 const handleRegister = async () => {

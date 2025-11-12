@@ -1,6 +1,13 @@
 <template>
   <div class="section">
     <div class="box-container">
+      <div
+        class="info-symbol"
+        v-if="selectedTab === 'login'"
+        @click="showModal = true"
+      >
+        <img src="https://www.svgrepo.com/show/509833/circled-info.svg" />
+      </div>
       <div class="box-header">
         <a
           :class="{ active: selectedTab === 'login' }"
@@ -15,22 +22,59 @@
       </div>
       <hr />
       <Login v-if="selectedTab === 'login'" />
-      <Register v-if="selectedTab === 'register'" />
+      <Register
+        v-if="selectedTab === 'register'"
+        @go_login="selectedTab = 'login'"
+      />
     </div>
   </div>
+
+  <GeneralModal
+    :show="showModal"
+    title="You forgot your password?"
+    @close="showModal = false"
+  >
+    <template #description>
+      No problem! Enter your email address below, and we'll send you a link to
+      reset your password.
+    </template>
+
+    <template #general>
+      <InputBar placerholder="Email" v-model="userEmail" />
+      <DefaultButton @button="resetPassword">Reset password</DefaultButton>
+    </template>
+  </GeneralModal>
+
+  <HeadMsgBox title="Information" :show="showMsg" @close="showMsg = false">
+    We've send you the link to reset your password.
+  </HeadMsgBox>
 </template>
 
 <script lang="ts" setup>
 import Login from "./Login.vue";
 import Register from "./Register.vue";
 
+import GeneralModal from "../../Modals/GeneralModal.vue";
+import HeadMsgBox from "../../Modals/HeadMsgBox.vue";
+
+import InputBar from "../../Default Inputs/InputBar.vue";
+import DefaultButton from "../../Default Buttons/DefaultButton.vue";
+
 import { ref } from "vue";
 
-const selectedTab = ref("register");
+const showMsg = ref<boolean>(false);
+const showModal = ref<boolean>(false);
+const userEmail = ref<string>("");
 
-function selectTab(tab: string) {
+const resetPassword = () => {
+  // Send API request to the server
+  showMsg.value = true;
+};
+
+const selectedTab = ref("register");
+const selectTab = (tab: string) => {
   selectedTab.value = tab;
-}
+};
 </script>
 
 <style scoped>
@@ -74,5 +118,20 @@ function selectTab(tab: string) {
 .box-header a.active {
   background: #0060511f;
   border-radius: 12px;
+}
+
+.info-symbol {
+  position: absolute;
+  transition: all 0.3s ease;
+}
+
+.info-symbol:hover {
+  transform: scale(0.9);
+  cursor: pointer;
+}
+
+.info-symbol img {
+  width: 24px;
+  height: auto;
 }
 </style>

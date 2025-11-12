@@ -46,7 +46,7 @@ label {
   font-size: 16px;
   pointer-events: none;
   transition: 0.3s ease all;
-  background-color: white;
+  background-color: transparent;
   padding: 0 4px;
 }
 
