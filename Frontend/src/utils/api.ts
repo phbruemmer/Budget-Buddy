@@ -1,3 +1,5 @@
+import { useAuthStore } from "./auth";
+
 const API_URL = "http://192.168.115.200:8000";
 
 interface API_REQUEST {
@@ -13,44 +15,16 @@ interface API_RESPONSE {
 
 const ALLOWED_BODY_METHODS = ["POST", "PUT", "PATCH"];
 
-async function refreshAccessToken(): Promise<string | null> {
-  try {
-    const response: API_REQUEST = await fetch(
-      `${API_URL}/api/auth/token/refresh/`,
-      {
-        method: "POST",
-        credentials: "include",
-      }
-    );
-
-    if (!response.ok) return null;
-
-    const data = await response.json;
-    const newToken = data?.access_token;
-
-    if (newToken) {
-      localStorage.setItem("access_token", newToken);
-      return newToken;
-    } else {
-      console.warn("Access Forbidden: Session expired or unauthorized");
-    }
-  } catch (err: any) {
-    console.error("Failed to refresh token: ", err);
-  }
-  return null;
-}
-
 export async function std_api_request(
   url: string,
   method: string,
   data?: API_REQUEST,
   authorization?: boolean
 ): Promise<API_RESPONSE> {
+  const auth = useAuthStore();
   const API_ENDPOINT = `${API_URL}${url}`;
 
-  const access_token = localStorage.getItem("access_token");
-
-  if (authorization && !access_token)
+  if (authorization && !auth.accessToken)
     return {
       ok: false,
       status: 0,
@@ -60,8 +34,8 @@ export async function std_api_request(
 
   const headers: Record<string, string> = {
     "Content-Type": "application/json",
-    ...(authorization && access_token
-      ? { Authorization: `Bearer ${access_token}` }
+    ...(authorization && auth.accessToken
+      ? { Authorization: `Bearer ${auth.accessToken}` }
       : {}),
   };
 
@@ -71,19 +45,18 @@ export async function std_api_request(
     ...(ALLOWED_BODY_METHODS.includes(method) && data
       ? { body: JSON.stringify(data) }
       : {}),
+    credentials: "include",
   };
 
   try {
     let response = await fetch(API_ENDPOINT, request);
 
     if (authorization && response.status === 401) {
-      const newToken = await refreshAccessToken();
-      if (newToken) {
-        headers.Authorization = `Bearer ${newToken}`;
+      auth.refreshAccessToken();
+      if (auth.isAuthenticated && auth.accessToken) {
+        headers.Authorization = `Bearer ${auth.accessToken}`;
         response = await fetch(API_ENDPOINT, request);
       } else {
-        localStorage.removeItem("access_token");
-        window.location.reload();
         return {
           ok: false,
           status: 401,

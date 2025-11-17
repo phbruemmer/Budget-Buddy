@@ -1,5 +1,5 @@
 <template>
-  <div class="protected" v-if="show_page">
+  <div class="protected" v-if="showPage">
     <div class="header-menu">
       <div class="menu">
         <Hamburger @open="openMenu = true" @close="openMenu = false" />
@@ -106,8 +106,8 @@
 </template>
 
 <script lang="ts" setup>
-import { std_api_request } from "../utils/api";
 import { onMounted, ref } from "vue";
+import { useRouter } from "vue-router";
 
 import Hamburger from "../components/Default Buttons/Hamburger.vue";
 import DefaultButton from "../components/Default Buttons/DefaultButton.vue";
@@ -118,10 +118,15 @@ import GeneralModal from "../components/Modals/GeneralModal.vue";
 import LandingpageFooter from "../components/Footers/LandingpageFooter.vue";
 import Loadingscreen from "../components/Loading/Loadingscreen.vue";
 
+import { useAuthStore } from "../utils/auth";
+
+const auth = useAuthStore();
+const router = useRouter();
+
 type SelectedProjectTabs = "recent" | "favorites" | "shared";
 
 const loadPage = ref<boolean>(false);
-const show_page = ref<boolean>(false);
+const showPage = ref<boolean>(false);
 const openMenu = ref<boolean>(false);
 const openImportModal = ref<boolean>(false);
 
@@ -149,17 +154,11 @@ const importProject = () => {
 };
 
 onMounted(async () => {
-  const access_token = localStorage.getItem("access_token");
-  if (!access_token) window.location.href = "/";
-
-  const response = await std_api_request(
-    "/api/auth/auto-login/",
-    "GET",
-    {},
-    true
-  );
-  if (response.ok) show_page.value = true;
-  else window.location.href = "/";
+  if (!auth.isAuthenticated) {
+    await auth.refreshAccessToken();
+    if (!auth.isAuthenticated) router.push("/");
+  }
+  showPage.value = true;
 });
 </script>
 
@@ -228,7 +227,6 @@ onMounted(async () => {
 }
 
 .project-body {
-  margin: 2vh;
 }
 
 .project-body table {

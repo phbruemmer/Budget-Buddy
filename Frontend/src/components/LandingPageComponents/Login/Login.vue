@@ -14,8 +14,12 @@
 import InputBar from "../../Default Inputs/InputBar.vue";
 import DefaultButton from "../../Default Buttons/DefaultButton.vue";
 
-import { std_api_request } from "../../../utils/api";
+import { useAuthStore } from "../../../utils/auth";
 import { ref } from "vue";
+import { useRouter } from "vue-router";
+
+const auth = useAuthStore();
+const router = useRouter();
 
 type MessageType = "success" | "error";
 
@@ -32,37 +36,30 @@ const userData = ref<UserData>({
 const messageType = ref<MessageType>("error");
 const message = ref<string>("");
 
-const login = async () => {
-  const response = await std_api_request(
-    "/api/auth/login/",
-    "POST",
-    userData.value
+const handleLogin = async () => {
+  const result = await auth.login(
+    userData.value.username,
+    userData.value.password
   );
-  if (!response.ok) {
+
+  if (!result.success) {
     userData.value.username = "";
     userData.value.password = "";
     messageType.value = "error";
-    message.value = response.data?.error;
+    message.value = result.message;
     return;
   } else {
     messageType.value = "success";
-    message.value = response.data?.message;
-  }
-  const access_token = response.data?.access;
-  const refresh_token = response.data?.refresh;
-
-  if (access_token && refresh_token) {
-    localStorage.setItem("access_token", access_token);
-    localStorage.setItem("refresh_token", refresh_token);
+    message.value = result.message;
   }
 
   setTimeout(() => {
-    window.location.href = "/dashboard/";
+    router.push("/dashboard/");
   }, 1000);
 };
 
 const handleClick = () => {
-  login();
+  handleLogin();
 };
 </script>
 
