@@ -118,9 +118,10 @@ import GeneralModal from "../components/Modals/GeneralModal.vue";
 import LandingpageFooter from "../components/Footers/LandingpageFooter.vue";
 import Loadingscreen from "../components/Loading/Loadingscreen.vue";
 
-import { useAuthStore } from "../utils/auth";
+import { AuthService } from "../utils/auth";
+import { std_api_request } from "../utils/api";
 
-const auth = useAuthStore();
+const auth = new AuthService();
 const router = useRouter();
 
 type SelectedProjectTabs = "recent" | "favorites" | "shared";
@@ -154,10 +155,12 @@ const importProject = () => {
 };
 
 onMounted(async () => {
-  if (!auth.isAuthenticated) {
-    await auth.refreshAccessToken();
-    if (!auth.isAuthenticated) router.push("/");
-  }
+  const response = await std_api_request(
+    "/api/auth/auto-login/",
+    "GET",
+    {},
+    true
+  );
   showPage.value = true;
 });
 </script>

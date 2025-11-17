@@ -1,18 +1,10 @@
-import { defineStore } from "pinia";
-import { ref } from "vue";
-
 const API_URL = "http://192.168.115.200:8000";
 
-export const useAuthStore = defineStore("auth", () => {
-  const accessToken = ref<string | null>(null);
-  const isAuthenticated = ref<boolean>(false);
-
-  const login = async (
+export class AuthService {
+  async login(
     username: string,
     password: string
-  ): Promise<{ success: boolean; message: string }> => {
-    console.log("Sack");
-
+  ): Promise<{ success: boolean; message: string }> {
     try {
       const response = await fetch(`${API_URL}/api/auth/login/`, {
         method: "POST",
@@ -25,23 +17,17 @@ export const useAuthStore = defineStore("auth", () => {
 
       const data = await response.json();
 
-      if (!response.ok || !data?.access) {
+      if (!response.ok)
         return { success: false, message: data?.error || "Login failed" };
-      }
-
-      accessToken.value = data.access;
-      isAuthenticated.value = true;
-
-      console.log(isAuthenticated.value);
 
       return { success: true, message: data.message };
     } catch (err: any) {
       console.error("Login error:", err);
       return { success: false, message: err.message || "Login failed" };
     }
-  };
+  }
 
-  const refreshAccessToken = async () => {
+  async refreshAccessToken() {
     try {
       const response = await fetch(`${API_URL}/api/auth/token/refresh/`, {
         method: "POST",
@@ -50,27 +36,12 @@ export const useAuthStore = defineStore("auth", () => {
         },
         credentials: "include",
       });
-
-      const data = await response.json();
-
-      if (response.ok && data?.access) {
-        accessToken.value = data.access;
-        isAuthenticated.value = true;
-      } else {
-        accessToken.value = null;
-        isAuthenticated.value = false;
-      }
     } catch (err) {
       console.error("Refresh token error:", err);
-      accessToken.value = null;
-      isAuthenticated.value = false;
     }
-  };
+  }
 
-  const logout = async () => {
-    accessToken.value = null;
-    isAuthenticated.value = false;
-
+  async logout() {
     try {
       await fetch(`${API_URL}/api/auth/logout/`, {
         method: "POST",
@@ -80,13 +51,5 @@ export const useAuthStore = defineStore("auth", () => {
     } catch (err) {
       console.error("Logout error:", err);
     }
-  };
-
-  return {
-    accessToken,
-    isAuthenticated,
-    login,
-    refreshAccessToken,
-    logout,
-  };
-});
+  }
+}

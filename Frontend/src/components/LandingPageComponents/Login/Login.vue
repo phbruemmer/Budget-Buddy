@@ -14,11 +14,12 @@
 import InputBar from "../../Default Inputs/InputBar.vue";
 import DefaultButton from "../../Default Buttons/DefaultButton.vue";
 
-import { useAuthStore } from "../../../utils/auth";
 import { ref } from "vue";
 import { useRouter } from "vue-router";
 
-const auth = useAuthStore();
+import { AuthService } from "../../../utils/auth";
+
+const auth = new AuthService();
 const router = useRouter();
 
 type MessageType = "success" | "error";
