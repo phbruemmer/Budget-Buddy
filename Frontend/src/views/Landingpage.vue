@@ -59,6 +59,9 @@ import AcceptDeclineModal from "../components/Modals/AcceptDeclineModal.vue";
 
 import { std_api_request } from "../utils/api";
 import { onMounted, ref } from "vue";
+import { useAuthStore } from "../utils/auth";
+
+const auth = useAuthStore();
 
 // Auto Log In //
 const show_modal = ref<boolean>(false);
@@ -76,8 +79,7 @@ const accept_login = () => {
 };
 
 onMounted(async () => {
-  const access_token = localStorage.getItem("access_token");
-  if (!access_token) return;
+  if (!auth.isAuthenticated) return;
 
   const response = await std_api_request(
     "/api/auth/auto-login/",
