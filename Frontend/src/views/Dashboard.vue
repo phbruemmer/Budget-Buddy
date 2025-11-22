@@ -161,7 +161,11 @@ onMounted(async () => {
     {},
     true
   );
-  showPage.value = true;
+  if (response.ok) {
+    showPage.value = true;
+  } else {
+    router.push("/");
+  }
 });
 </script>
 
