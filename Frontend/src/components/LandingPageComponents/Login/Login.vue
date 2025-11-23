@@ -1,11 +1,23 @@
 <template>
-  <h1>Login</h1>
-  <InputBar placerholder="Username" type="text" v-model="userData.username" />
-  <InputBar
-    placerholder="Password"
-    type="password"
-    v-model="userData.password"
-  />
+  <div v-if="!verificationCodeRequired">
+    <h1>Login</h1>
+    <InputBar placeholder="Username" type="text" v-model="userData.username" />
+    <InputBar
+      placeholder="Password"
+      type="password"
+      v-model="userData.password"
+    />
+  </div>
+
+  <div v-else>
+    <h1>Verify Account</h1>
+    <InputBar
+      placeholder="Verification Code"
+      type="text"
+      v-model="verificationCode"
+    />
+  </div>
+
   <DefaultButton @button="handleClick">Login</DefaultButton>
   <p :class="messageType">{{ message }}</p>
 </template>
@@ -34,14 +46,25 @@ const userData = ref<UserData>({
   password: "",
 });
 
+const verificationCode = ref<string | undefined>();
+
 const messageType = ref<MessageType>("error");
 const message = ref<string>("");
+
+const verificationCodeRequired = ref<boolean>(false);
 
 const handleLogin = async () => {
   const result = await auth.login(
     userData.value.username,
     userData.value.password
   );
+
+  if (result.status === 403) {
+    message.value = "Check your emails for a verification code.";
+    messageType.value = "success";
+    verificationCodeRequired.value = true;
+    return;
+  }
 
   if (!result.success) {
     userData.value.username = "";
@@ -59,8 +82,28 @@ const handleLogin = async () => {
   }, 1000);
 };
 
+const handleVerification = async () => {
+  if (!userData.value.username || !userData.value.password) {
+    messageType.value = "error";
+    message.value = "Missing user credentials! Something went wrong.";
+    verificationCodeRequired.value = false;
+    return;
+  }
+
+  if (!verificationCode.value) {
+    messageType.value = "error";
+    message.value = "No verification code entered.";
+    return;
+  }
+  const response = await auth.userVerification(
+    userData.value.username,
+    verificationCode.value
+  );
+  if (response.success) handleLogin();
+};
+
 const handleClick = () => {
-  handleLogin();
+  verificationCodeRequired.value ? handleVerification() : handleLogin();
 };
 </script>
 

@@ -1,7 +1,7 @@
 <template>
   <div class="input-container">
     <input :type="props.type" required v-model="input_data" placeholder=" " />
-    <label>{{ props.placerholder }}</label>
+    <label>{{ props.placeholder }}</label>
   </div>
 </template>
 
@@ -9,7 +9,7 @@
 type TypeOptions = "text" | "password" | "email";
 
 const props = defineProps<{
-  placerholder?: string;
+  placeholder?: string;
   type?: TypeOptions;
 }>();
 

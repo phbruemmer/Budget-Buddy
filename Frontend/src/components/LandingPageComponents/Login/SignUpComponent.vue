@@ -40,7 +40,7 @@
     </template>
 
     <template #general>
-      <InputBar placerholder="Email" v-model="userEmail" />
+      <InputBar placeholder="Email" v-model="userEmail" />
       <DefaultButton @button="resetPassword">Reset password</DefaultButton>
     </template>
   </GeneralModal>

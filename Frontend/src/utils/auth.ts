@@ -1,10 +1,70 @@
 const API_URL = "http://192.168.115.200:8000";
 
 export class AuthService {
+  async register(
+    username: string,
+    email: string,
+    password: string,
+    password_2: string
+  ): Promise<{ success: boolean; message: string }> {
+    try {
+      const response = await fetch(`${API_URL}/api/auth/register/`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ username, email, password, password_2 }),
+        credentials: "include",
+      });
+
+      const data = await response.json();
+
+      console.log(data);
+
+      if (!response.ok)
+        return {
+          success: false,
+          message: data?.error || "Registration failed",
+        };
+      return { success: true, message: data.message };
+    } catch (err: any) {
+      console.error("Registration error: ", err);
+      return { success: false, message: err.message || "Registration failed" };
+    }
+  }
+
+  async userVerification(
+    username: string,
+    verification_code: string
+  ): Promise<{ success: boolean; message: string }> {
+    try {
+      const response = await fetch(`${API_URL}/api/auth/verify/`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ username, verification_code }),
+        credentials: "include",
+      });
+      console.log(response);
+      const data = await response.json();
+
+      if (!response.ok)
+        return {
+          success: false,
+          message: data?.error || "Registration failed",
+        };
+      return { success: true, message: data.message };
+    } catch (err: any) {
+      console.error("Registration error: ", err);
+      return { success: false, message: err.message || "Registration failed" };
+    }
+  }
+
   async login(
     username: string,
     password: string
-  ): Promise<{ success: boolean; message: string }> {
+  ): Promise<{ status: number | null; success: boolean; message: string }> {
     try {
       const response = await fetch(`${API_URL}/api/auth/login/`, {
         method: "POST",
@@ -18,12 +78,20 @@ export class AuthService {
       const data = await response.json();
 
       if (!response.ok)
-        return { success: false, message: data?.error || "Login failed" };
+        return {
+          status: response.status,
+          success: false,
+          message: data?.error || "Login failed",
+        };
 
-      return { success: true, message: data.message };
+      return { status: response.status, success: true, message: data.message };
     } catch (err: any) {
-      console.error("Login error:", err);
-      return { success: false, message: err.message || "Login failed" };
+      console.error("Login error: ", err);
+      return {
+        status: null,
+        success: false,
+        message: err.message || "Login failed",
+      };
     }
   }
 

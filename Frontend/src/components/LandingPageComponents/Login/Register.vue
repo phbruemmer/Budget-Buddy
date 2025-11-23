@@ -2,23 +2,23 @@
   <h1>Register</h1>
 
   <div v-if="registerSteps === 0">
-    <InputBar placerholder="Username" type="text" v-model="userData.username" />
-    <InputBar placerholder="E-Mail" type="email" v-model="userData.email" />
+    <InputBar placeholder="Username" type="text" v-model="userData.username" />
+    <InputBar placeholder="E-Mail" type="email" v-model="userData.email" />
     <InputBar
-      placerholder="Password"
+      placeholder="Password"
       type="password"
       v-model="userData.password_1"
     />
   </div>
   <div v-else-if="registerSteps === 1">
     <InputBar
-      placerholder="Password Check"
+      placeholder="Password Check"
       type="password"
       v-model="userData.password_2"
     />
   </div>
   <div v-else-if="registerSteps === 2">
-    <InputBar placerholder="Verification Code" v-model="verification_code" />
+    <InputBar placeholder="Verification Code" v-model="verification_code" />
   </div>
   <div v-else>
     <h3>Hey! Don't change my code! Chaos theory says don't.</h3>
@@ -54,8 +54,10 @@ import DefaultButton from "../../Default Buttons/DefaultButton.vue";
 // Modals
 import HeadMsgBox from "../../Modals/HeadMsgBox.vue";
 
-import { std_api_request } from "../../../utils/api";
 import { ref } from "vue";
+import { AuthService } from "../../../utils/auth";
+
+const auth = new AuthService();
 
 const emits = defineEmits<{
   (e: "go_login"): void;
@@ -93,18 +95,28 @@ const handleReturn = () => {
 };
 
 const handleVerification = async () => {
-  const response = await std_api_request("/api/auth/verify/", "POST", {
-    username: userData.value.username,
-    email: userData.value.email,
-    verification_code: verification_code.value,
-  });
+  if (
+    !userData.value.username ||
+    !userData.value.email ||
+    !verification_code.value
+  )
+    return;
+  const response = await auth.userVerification(
+    userData.value.username,
+    verification_code.value
+  );
   verification_code.value = "";
 
-  if (response.ok) emits("go_login");
+  if (response.success) emits("go_login");
   else handleMsgBox("Invalid verification code.");
 };
 
 const handleRegister = async () => {
+  if (!userData.value.username || !userData.value.email) {
+    handleMsgBox("Username or email is not valid anymore.");
+    return;
+  }
+
   if (!userData.value?.password_1 || !userData.value.password_2) {
     handleMsgBox("You need to enter your password twice.");
     return;
@@ -115,14 +127,14 @@ const handleRegister = async () => {
   }
   registerSteps.value += 1;
 
-  const response = await std_api_request("/api/auth/register/", "POST", {
-    username: userData.value.username,
-    email: userData.value.email,
-    password: userData.value.password_1,
-    password_2: userData.value.password_2,
-  });
+  const response = await auth.register(
+    userData.value.username,
+    userData.value.email,
+    userData.value.password_1,
+    userData.value.password_2
+  );
 
-  console.log(response.data);
+  if (!response.success) registerSteps.value = 0;
 };
 
 const check_password_regex = (password: string): boolean => {

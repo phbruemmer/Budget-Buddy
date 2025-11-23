@@ -1,100 +1,107 @@
 <template>
-  <div class="editor"></div>
-
-  <transition name="slide-up">
-    <div class="tool-box">
-      <button
-        class="toggle-btn"
-        @click="isOpen = !isOpen"
-        :class="{ open: isOpen }"
-      >
-        <span v-if="!isOpen">Tools</span>
-        <span v-else>Close</span>
-      </button>
-      <div class="tools">
-        <p>Tool 1</p>
-        <p>Tool 2</p>
-      </div>
-    </div>
-  </transition>
+  <div
+    class="workspace"
+    ref="workspace"
+    @mousedown="startDrag"
+    @mouseup="stopDrag"
+    @mouseleave="stopDrag"
+    @mousemove="onDrag"
+    @wheel.prevent="wheelZoom"
+  >
+    <div class="editor" ref="editor"></div>
+  </div>
 </template>
 
 <script lang="ts" setup>
-import { ref } from "vue";
+import { ref, onMounted } from "vue";
 
-const isOpen = ref(false);
+const workspace = ref<HTMLElement | null>(null);
+const editor = ref<HTMLElement | null>(null);
+
+let isDragging = false;
+let startX = 0;
+let startY = 0;
+let scrollLeft = 0;
+let scrollTop = 0;
+let zoom = 1;
+
+const ZOOM_SPEED = 0.001;
+
+const wheelZoom = (e: WheelEvent) => {
+  if (!workspace.value || !editor.value) return;
+
+  const rect = workspace.value.getBoundingClientRect();
+  const mouseX = e.clientX - rect.left + workspace.value.scrollLeft;
+  const mouseY = e.clientY - rect.top + workspace.value.scrollTop;
+
+  const newZoom = Math.min(Math.max(zoom - e.deltaY * ZOOM_SPEED, 0.8), 5);
+  const zoomFactor = newZoom / zoom;
+  zoom = newZoom;
+
+  workspace.value.scrollLeft = mouseX * zoomFactor - (e.clientX - rect.left);
+  workspace.value.scrollTop = mouseY * zoomFactor - (e.clientY - rect.top);
+
+  editor.value.style.transform = `scale(${zoom})`;
+  editor.value.style.transformOrigin = "top left";
+};
+
+const startDrag = (e: MouseEvent) => {
+  if (!workspace.value) return;
+  isDragging = true;
+  startX = e.clientX;
+  startY = e.clientY;
+  scrollLeft = workspace.value.scrollLeft;
+  scrollTop = workspace.value.scrollTop;
+  workspace.value.style.cursor = "grabbing";
+};
+
+const stopDrag = () => {
+  isDragging = false;
+  if (workspace.value) workspace.value.style.cursor = "default";
+};
+
+const onDrag = (e: MouseEvent) => {
+  if (!isDragging || !workspace.value || !editor.value) return;
+
+  const deltaX = e.clientX - startX;
+  const deltaY = e.clientY - startY;
+
+  let newScrollLeft = scrollLeft - deltaX;
+  let newScrollTop = scrollTop - deltaY;
+
+  const maxScrollLeft =
+    editor.value.scrollWidth * zoom - workspace.value.clientWidth;
+  const maxScrollTop =
+    editor.value.scrollHeight * zoom - workspace.value.clientHeight;
+
+  newScrollLeft = Math.max(0, Math.min(newScrollLeft, maxScrollLeft));
+  newScrollTop = Math.max(0, Math.min(newScrollTop, maxScrollTop));
+
+  workspace.value.scrollLeft = newScrollLeft;
+  workspace.value.scrollTop = newScrollTop;
+};
+
+onMounted(() => {
+  if (workspace.value && editor.value) {
+    workspace.value.scrollLeft =
+      (editor.value.scrollWidth - workspace.value.clientWidth) / 2;
+    workspace.value.scrollTop =
+      (editor.value.scrollHeight - workspace.value.clientHeight) / 2;
+  }
+});
 </script>
 
 <style scoped>
-.editor {
-  background: #fff;
+.workspace {
+  width: 100vw;
   height: 100vh;
-}
-
-.toggle-btn {
-  position: fixed;
-  bottom: 0;
-  left: 50%;
-  transform: translateX(-50%);
-  width: 7rem;
-  padding: 12px 16px;
-  border-radius: 14px 14px 0 0;
-  background: #006051;
-  color: #fff;
-  border: none;
-  cursor: pointer;
-  font-size: 1rem;
-  font-weight: 500;
-  transition: all 0.3s ease;
-}
-
-.toggle-btn.open {
-  bottom: 250px;
-  background: #006051;
-}
-
-.tool-box {
-  position: fixed;
-  bottom: 0;
-  left: 0;
-  width: 100%;
-  height: 250px;
-  background: #006051;
-  color: white;
-  border-radius: 18px 18px 0 0;
-  box-shadow: 0 -4px 14px rgba(0, 0, 0, 0.2);
   overflow: hidden;
 }
 
-.tools {
-  padding: 20px;
-  font-size: 1.1rem;
-  animation: fadeIn 0.1s ease;
-}
-
-.slide-up-enter-active,
-.slide-up-leave-active {
-  transition: all 0.3s ease;
-}
-
-.slide-up-enter-from,
-.slide-up-leave-to {
-  transform: translateY(100%);
-  opacity: 0;
-}
-
-.slide-up-enter-to,
-.slide-up-leave-from {
-  transform: translateY(0);
-  opacity: 1;
-}
-
-@keyframes fadeIn {
-  from {
-    opacity: 0;
-  }
-  to {
-    opacity: 1;
-  }
+.editor {
+  width: 400vw;
+  height: 400vh;
+  background: radial-gradient(circle, #666 1px, transparent 1px);
+  background-size: 60px 60px;
 }
 </style>
