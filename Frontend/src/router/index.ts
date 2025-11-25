@@ -17,6 +17,14 @@ const routes = [
     name: "ProjectEditor",
     component: () => import("../views/Editor.vue"),
   },
+  {
+    path: "/reset-password",
+    name: "ResetPassword",
+    component: () => import("../views/ResetPassword.vue"),
+    props: (route: any) => ({
+      token: route.query.token,
+    }),
+  },
 ];
 
 const router = createRouter({

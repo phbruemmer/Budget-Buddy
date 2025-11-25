@@ -103,7 +103,7 @@
 }
 
 .footer-section a:hover {
-  color: #a7fff1;
+  color: #fff;
 }
 
 .footer-bottom {

@@ -40,13 +40,13 @@
     </template>
 
     <template #general>
-      <InputBar placeholder="Email" v-model="userEmail" />
+      <InputBar type="email" placeholder="Email" v-model="userEmail" />
       <DefaultButton @button="resetPassword">Reset password</DefaultButton>
     </template>
   </GeneralModal>
 
   <HeadMsgBox title="Information" :show="showMsg" @close="showMsg = false">
-    We've send you the link to reset your password.
+    {{ err_msg }}
   </HeadMsgBox>
 </template>
 
@@ -61,14 +61,35 @@ import InputBar from "../../Default Inputs/InputBar.vue";
 import DefaultButton from "../../Default Buttons/DefaultButton.vue";
 
 import { ref } from "vue";
+import { AuthService } from "../../../utils/auth";
+
+const auth = new AuthService();
 
 const showMsg = ref<boolean>(false);
 const showModal = ref<boolean>(false);
 const userEmail = ref<string>("");
 
-const resetPassword = () => {
-  // Send API request to the server
-  showMsg.value = true;
+const err_msg = ref<string>("");
+
+const check_email_regex = (email: string) => {
+  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+    err_msg.value = "Please enter a valid email address.";
+    showMsg.value = true;
+    return false;
+  }
+  return true;
+};
+
+const resetPassword = async () => {
+  if (!check_email_regex(userEmail.value)) return;
+  const response = await auth.requestPasswordReset(userEmail.value);
+  showModal.value = false;
+  userEmail.value = "";
+
+  setTimeout(() => {
+    err_msg.value = "We've send you the link to reset your password.";
+    showMsg.value = response.success;
+  }, 250);
 };
 
 const selectedTab = ref("register");

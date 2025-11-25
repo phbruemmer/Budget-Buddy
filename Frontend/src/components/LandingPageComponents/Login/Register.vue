@@ -134,10 +134,17 @@ const handleRegister = async () => {
     userData.value.password_2
   );
 
-  if (!response.success) registerSteps.value = 0;
+  if (!response.success) {
+    handleMsgBox(response.message);
+    registerSteps.value = 0;
+  }
 };
 
 const check_password_regex = (password: string): boolean => {
+  if (password.length <= 6 || password.length >= 255) {
+    handleMsgBox("Your password must be between 6 and 255 characters long.");
+    return false;
+  }
   if (!/[A-Z]/.test(password)) {
     handleMsgBox("Password must contain at least one uppercase letter.");
     return false;
