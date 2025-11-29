@@ -9,7 +9,6 @@ from rest_framework.decorators import api_view, permission_classes
 
 from .serializers import RegisterSerializer
 from .serializers import VerifyUserSerializer
-# from .serializers import LoginSerializer
 
 
 class RegisterView(APIView):

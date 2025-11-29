@@ -10,10 +10,14 @@
   >
     <div class="editor" ref="editor"></div>
   </div>
+
+  <EditorMenu />
 </template>
 
 <script lang="ts" setup>
 import { ref, onMounted } from "vue";
+
+import EditorMenu from "../components/Editor/EditorMenu.vue";
 
 const workspace = ref<HTMLElement | null>(null);
 const editor = ref<HTMLElement | null>(null);

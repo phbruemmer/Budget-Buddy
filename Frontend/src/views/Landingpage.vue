@@ -1,6 +1,12 @@
 <template>
-  <LandingpageNavbar />
-
+  <StdNavbar
+    :nav_links="[
+      { display: 'Home', destination: '/' },
+      { display: 'Features', destination: '/' },
+      { display: 'Pricing', destination: '/' },
+      { display: 'Contact', destination: '/' },
+    ]"
+  />
   <MainBackground>
     <!-- Add the Landing Page contents in here -->
     <LandingPageBody />
@@ -45,7 +51,7 @@
 </template>
 
 <script lang="ts" setup>
-import LandingpageNavbar from "../components/Navbars/LandingpageNavbar.vue";
+import StdNavbar from "../components/Navbars/StdNavbar.vue";
 import MainBackground from "../components/Backgrounds/MainBackground.vue";
 
 // Body Components

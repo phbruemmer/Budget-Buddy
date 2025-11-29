@@ -2,22 +2,32 @@
   <div class="main-container">
     <nav class="navbar">
       <ul class="nav-links">
-        <li><a href="#">Home</a></li>
-        <li><a href="#">Features</a></li>
-        <li><a href="#">Pricing</a></li>
-        <li><a href="#">Contact</a></li>
+        <li v-for="value in props.nav_links">
+          <a @click="moveTo(value.destination)">{{ value.display }}</a>
+        </li>
       </ul>
     </nav>
   </div>
 </template>
 
-<script lang="ts" setup></script>
+<script lang="ts" setup>
+import router from "../../router";
+
+const props = defineProps<{
+  nav_links: { display: string; destination: string }[];
+}>();
+
+const moveTo = (destination: string) => {
+  router.push(destination);
+};
+</script>
 
 <style scoped>
 .main-container {
   display: flex;
   justify-content: center;
   margin: 2vh;
+  z-index: 9999;
 }
 
 .navbar {
@@ -26,7 +36,7 @@
   align-items: center;
   padding: 0 32px;
   height: 70px;
-  background-color: #00605111;
+  background-color: #00605129;
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
   font-family: "Inter", sans-serif;
   position: sticky;
@@ -57,5 +67,6 @@
 
 .nav-links a:hover {
   transform: scale(1.08);
+  cursor: pointer;
 }
 </style>
