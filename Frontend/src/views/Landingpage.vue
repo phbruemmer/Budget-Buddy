@@ -85,15 +85,7 @@ const accept_login = () => {
   }, 1500);
 };
 
-onMounted(async () => {
-  const response = await std_api_request(
-    "/api/auth/auto-login/",
-    "GET",
-    {},
-    true
-  );
-  if (response.ok) show_modal.value = true;
-});
+onMounted(async () => {});
 </script>
 
 <style scoped></style>
