@@ -25,6 +25,10 @@ const routes = [
       token: route.query.token,
     }),
   },
+  {
+    path: "/callback",
+    component: () => import("../views/Callback.vue"),
+  },
 ];
 
 const router = createRouter({

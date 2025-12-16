@@ -91,6 +91,10 @@ export class AuthService {
     }
   }
 
+  async redirectLogin() {
+    window.location.href = `${API_URL}/auth/init-login/`;
+  }
+
   async refreshAccessToken() {
     try {
       await fetch(`${API_URL}/api/auth/token/refresh/`, {

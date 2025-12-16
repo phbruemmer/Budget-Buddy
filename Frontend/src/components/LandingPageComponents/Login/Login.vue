@@ -103,7 +103,8 @@ const handleVerification = async () => {
 };
 
 const handleClick = () => {
-  verificationCodeRequired.value ? handleVerification() : handleLogin();
+  // verificationCodeRequired.value ? handleVerification() : handleLogin();
+  auth.redirectLogin();
 };
 </script>
 
